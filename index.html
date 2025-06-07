@@ -343,68 +343,34 @@
             margin-top: 3rem;
         }
 
-        /* 改进的地图样式 */
-        .analytics-info {
-            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
-            border: 1px solid #667eea;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
-            color: #1565c0;
+        /* 简化的世界地图样式 */
+        #world-visitor-map {
+            height: 500px;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid #e9ecef;
         }
 
-        .real-time-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background: #4caf50;
-            border-radius: 50%;
-            margin-right: 0.5rem;
-            animation: pulse-dot 1.5s infinite;
-        }
-
-        @keyframes pulse-dot {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-
-        .visitor-stats {
+        .simple-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 1rem;
-            margin: 1rem 0;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
 
-        .visitor-stat {
+        .simple-stat-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            padding: 1.5rem;
+            border-radius: 15px;
             text-align: center;
-            padding: 0.5rem;
+            border: 1px solid rgba(102, 126, 234, 0.2);
         }
 
-        .visitor-stat-number {
-            font-size: 1.2rem;
+        .simple-stat-number {
+            font-size: 2rem;
             font-weight: 700;
             color: #667eea;
-        }
-
-        .visitor-stat-label {
-            font-size: 0.8rem;
-            color: #666;
-            margin-top: 0.2rem;
-        }
-
-        .location-info {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 8px;
-            padding: 0.8rem;
-            margin-bottom: 1rem;
-            font-size: 0.85rem;
-            color: #856404;
+            margin-bottom: 0.5rem;
         }
     </style>
 </head>
@@ -605,63 +571,30 @@
                     </div>
                 </div>
 
-                <!-- 改进的访问地图 -->
+                <!-- 简化的全球访问地图 -->
                 <div class="plot-container">
-                    <div class="plot-title">
-                        <span class="real-time-indicator"></span>
-                        Real-time Visitor Tracking
-                    </div>
-                    <div class="analytics-info">
-                        🌍 <strong>Live Analytics:</strong> This map shows real visitor locations based on IP geolocation. Your location is automatically detected and displayed.
-                    </div>
+                    <div class="plot-title">🌍 Global Visitor Map</div>
                     
-                    <div class="location-info" id="user-location-info">
-                        📍 Detecting your location...
-                    </div>
-
-                    <div class="visitor-stats">
-                        <div class="visitor-stat">
-                            <div class="visitor-stat-number" id="page-views">1</div>
-                            <div class="visitor-stat-label">Page Views</div>
-                        </div>
-                        <div class="visitor-stat">
-                            <div class="visitor-stat-number" id="unique-visitors">1</div>
-                            <div class="visitor-stat-label">Visitors Today</div>
-                        </div>
-                        <div class="visitor-stat">
-                            <div class="visitor-stat-number" id="countries-visited">1</div>
-                            <div class="visitor-stat-label">Countries</div>
-                        </div>
-                        <div class="visitor-stat">
-                            <div class="visitor-stat-number" id="session-time">0:00</div>
-                            <div class="visitor-stat-label">Session Time</div>
-                        </div>
-                    </div>
-
-                    <div id="visitor-map" style="height: 400px; border-radius: 10px; overflow: hidden;"></div>
-                </div>
-
-                <!-- 原有的统计卡片但使用真实数据 -->
-                <div class="plot-container">
-                    <div class="plot-title">Analytics Summary</div>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-number" id="total-visits">1</div>
+                    <div class="simple-stats">
+                        <div class="simple-stat-card">
+                            <div class="simple-stat-number" id="total-visits">4</div>
                             <div>Total Visits</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="online-users">1</div>
-                            <div>Active Users</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="countries-count">1</div>
+                        <div class="simple-stat-card">
+                            <div class="simple-stat-number" id="countries-count">1</div>
                             <div>Countries</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="today-visits">1</div>
+                        <div class="simple-stat-card">
+                            <div class="simple-stat-number" id="active-users">1</div>
+                            <div>Active Users</div>
+                        </div>
+                        <div class="simple-stat-card">
+                            <div class="simple-stat-number" id="today-visits">4</div>
                             <div>Today's Visits</div>
                         </div>
                     </div>
+
+                    <div id="world-visitor-map"></div>
                 </div>
             </div>
         </div>
@@ -673,15 +606,9 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script>
-        // 真实访问统计
-        let realAnalytics = {
-            sessionStart: Date.now(),
-            pageViews: 1,
-            uniqueVisitors: 1,
-            countries: new Set(),
-            userLocation: null,
-            visitedCountries: []
-        };
+        // 全局变量
+        let worldMap;
+        let visitedLocations = new Set();
 
         // 细胞数据
         const cellData = {
@@ -691,9 +618,6 @@
             microglia: { color: '#96CEB4', cells: generateCells(150, 280, 350, 50) },
             endothelial: { color: '#FFEAA7', cells: generateCells(100, 480, 200, 40) }
         };
-
-        let visitorMap;
-        let userMarker;
 
         function generateCells(count, centerX, centerY, spread) {
             const cells = [];
@@ -803,7 +727,7 @@
             }, 1500);
         }
 
-function showCluster(clusterType) {
+        function showCluster(clusterType) {
             document.getElementById('cluster-plot-title').textContent = `Highlighting: ${clusterType.charAt(0).toUpperCase() + clusterType.slice(1)}`;
             drawScatterPlot('cluster-plot', cellData, clusterType);
         }
@@ -818,12 +742,10 @@ function showCluster(clusterType) {
         }
 
         function switchTab(tabName) {
-            // 移除所有active类
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.querySelectorAll('.nav a').forEach(link => link.classList.remove('active'));
             
-            // 添加active类到选中的标签
             const tabButton = document.querySelector(`[data-tab="${tabName}"].tab`);
             const tabContent = document.getElementById(tabName);
             const navLink = document.querySelector(`[data-tab="${tabName}"]`);
@@ -857,51 +779,43 @@ function showCluster(clusterType) {
             }
         });
 
-        // 真实地理位置获取和地图初始化
-        function initializeRealVisitorMap() {
-            // 初始化地图
-            visitorMap = L.map('visitor-map').setView([20, 0], 2);
+        // 初始化世界地图
+        function initializeWorldMap() {
+            // 创建地图
+            worldMap = L.map('world-visitor-map').setView([20, 0], 2);
             
             // 添加地图瓦片
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
-                maxZoom: 18
-            }).addTo(visitorMap);
+                maxZoom: 6,
+                minZoom: 2
+            }).addTo(worldMap);
 
-            // 获取用户真实位置
-            getUserLocation();
-
-            // 启动会话计时器
-            startSessionTimer();
+            // 获取用户位置并添加气球标记
+            getUserLocationAndAddBalloon();
+            
+            // 添加一些示例访问位置
+            addSampleVisitorLocations();
         }
 
-        function getUserLocation() {
-            const locationInfo = document.getElementById('user-location-info');
-            
+function getUserLocationAndAddBalloon() {
             if (navigator.geolocation) {
-                locationInfo.innerHTML = '📍 正在获取您的位置...';
-                
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
                         
-                        // 保存用户位置
-                        realAnalytics.userLocation = { lat, lng };
+                        // 添加当前用户的气球标记（绿色）
+                        addVisitorBalloon(lat, lng, '您的位置', true);
                         
-                        // 添加用户标记
-                        addUserMarker(lat, lng);
-                        
-                        // 获取城市信息
-                        getCityFromCoords(lat, lng);
+                        // 将地图中心设置为用户位置
+                        worldMap.setView([lat, lng], 4);
                         
                         // 更新统计
-                        updateRealAnalytics();
+                        updateVisitorStats();
                     },
                     (error) => {
-                        console.log('位置获取失败:', error);
-                        locationInfo.innerHTML = '📍 无法获取精确位置，使用IP定位';
-                        
+                        console.log('无法获取位置:', error);
                         // 使用IP定位作为备选
                         getLocationFromIP();
                     },
@@ -912,176 +826,123 @@ function showCluster(clusterType) {
                     }
                 );
             } else {
-                locationInfo.innerHTML = '📍 浏览器不支持地理定位';
+                // 浏览器不支持地理定位，使用IP定位
                 getLocationFromIP();
             }
         }
 
-        function addUserMarker(lat, lng) {
-            // 创建自定义图标
-            const userIcon = L.divIcon({
-                className: 'user-location-marker',
-                html: `<div style="
-                    width: 20px; 
-                    height: 20px; 
-                    background: #ff4757; 
-                    border: 3px solid white; 
-                    border-radius: 50%; 
-                    box-shadow: 0 0 10px rgba(255,71,87,0.6);
-                    animation: pulse 2s infinite;
-                "></div>`,
-                iconSize: [20, 20],
-                iconAnchor: [10, 10]
-            });
-
-            // 添加用户标记
-            userMarker = L.marker([lat, lng], { icon: userIcon }).addTo(visitorMap);
-            
-            // 设置弹窗
-            userMarker.bindPopup(`
-                <div style="text-align: center; font-family: 'Segoe UI', sans-serif;">
-                    <h4 style="margin: 0; color: #ff4757;">🎯 Your Location</h4>
-                    <p style="margin: 5px 0; font-size: 12px;">Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}</p>
-                    <p style="margin: 5px 0; font-size: 12px;">Currently viewing scATAC-seq data</p>
-                </div>
-            `).openPopup();
-
-            // 将地图中心设置为用户位置
-            visitorMap.setView([lat, lng], 8);
-
-            // 添加脉冲动画CSS
-            if (!document.getElementById('pulse-animation')) {
-                const style = document.createElement('style');
-                style.id = 'pulse-animation';
-                style.textContent = `
-                    @keyframes pulse {
-                        0% { transform: scale(1); opacity: 1; }
-                        50% { transform: scale(1.3); opacity: 0.7; }
-                        100% { transform: scale(1); opacity: 1; }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-        }
-
-        function getCityFromCoords(lat, lng) {
-            // 使用Nominatim反向地理编码获取城市信息
-            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&addressdetails=1`)
-                .then(response => response.json())
-                .then(data => {
-                    const city = data.address?.city || data.address?.town || data.address?.village || 'Unknown City';
-                    const country = data.address?.country || 'Unknown Country';
-                    
-                    document.getElementById('user-location-info').innerHTML = 
-                        `📍 当前位置: ${city}, ${country}`;
-                    
-                    // 更新国家统计
-                    realAnalytics.countries.add(country);
-                    updateCountryCount();
-                })
-                .catch(error => {
-                    console.log('城市信息获取失败:', error);
-                    document.getElementById('user-location-info').innerHTML = 
-                        `📍 位置: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-                });
-        }
-
         function getLocationFromIP() {
-            // 使用IP地理定位API
+            // 使用免费的IP地理定位服务
             fetch('https://ipapi.co/json/')
                 .then(response => response.json())
                 .then(data => {
                     const lat = data.latitude;
                     const lng = data.longitude;
-                    const city = data.city;
-                    const country = data.country_name;
+                    const city = data.city || 'Unknown City';
+                    const country = data.country_name || 'Unknown Country';
                     
                     if (lat && lng) {
-                        realAnalytics.userLocation = { lat, lng };
-                        addUserMarker(lat, lng);
-                        
-                        document.getElementById('user-location-info').innerHTML = 
-                            `📍 IP定位: ${city}, ${country}`;
-                        
-                        realAnalytics.countries.add(country);
-                        updateCountryCount();
+                        // 添加基于IP的位置标记
+                        addVisitorBalloon(lat, lng, `${city}, ${country} (IP定位)`, true);
+                        worldMap.setView([lat, lng], 4);
+                        updateVisitorStats();
                     }
                 })
                 .catch(error => {
                     console.log('IP定位失败:', error);
-                    document.getElementById('user-location-info').innerHTML = 
-                        '📍 无法获取位置信息';
+                    // 默认显示世界地图
+                    addSampleVisitorLocations();
                 });
         }
 
-        function updateRealAnalytics() {
-            // 更新页面访问量
-            realAnalytics.pageViews++;
-            document.getElementById('page-views').textContent = realAnalytics.pageViews;
-            document.getElementById('total-visits').textContent = realAnalytics.pageViews;
-            document.getElementById('today-visits').textContent = realAnalytics.pageViews;
+        function addVisitorBalloon(lat, lng, locationName, isCurrentUser = false) {
+            // 创建气球标记
+            const balloonIcon = L.divIcon({
+                className: 'visitor-balloon',
+                html: `<div style="
+                    width: 20px; 
+                    height: 30px; 
+                    background: ${isCurrentUser ? '#4CAF50' : '#FF4757'}; 
+                    border-radius: 50% 50% 50% 0; 
+                    border: 2px solid white; 
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                    position: relative;
+                    transform: rotate(-45deg);
+                    animation: balloon-bounce 2s infinite ease-in-out;
+                "></div>
+                <style>
+                    @keyframes balloon-bounce {
+                        0%, 100% { transform: rotate(-45deg) translateY(0px); }
+                        50% { transform: rotate(-45deg) translateY(-5px); }
+                    }
+                </style>`,
+                iconSize: [20, 30],
+                iconAnchor: [10, 30]
+            });
+
+            // 添加标记到地图
+            const marker = L.marker([lat, lng], { icon: balloonIcon }).addTo(worldMap);
             
-            // 更新在线用户（模拟1个用户）
-            document.getElementById('unique-visitors').textContent = realAnalytics.uniqueVisitors;
-            document.getElementById('online-users').textContent = realAnalytics.uniqueVisitors;
+            // 设置弹窗信息
+            marker.bindPopup(`
+                <div style="text-align: center; font-family: 'Segoe UI', sans-serif;">
+                    <h4 style="margin: 0; color: ${isCurrentUser ? '#4CAF50' : '#FF4757'};">
+                        ${isCurrentUser ? '🎯' : '👤'} ${locationName}
+                    </h4>
+                    <p style="margin: 5px 0; font-size: 12px;">
+                        ${isCurrentUser ? '当前访问者' : '访问者'}
+                    </p>
+                    <p style="margin: 5px 0; font-size: 11px; color: #666;">
+                        坐标: ${lat.toFixed(2)}, ${lng.toFixed(2)}
+                    </p>
+                </div>
+            `);
+
+            // 添加交互效果
+            marker.on('mouseover', function() {
+                this.openPopup();
+            });
+
+            // 记录访问位置
+            const locationKey = `${lat.toFixed(1)},${lng.toFixed(1)}`;
+            visitedLocations.add(locationKey);
+            
+            return marker;
         }
 
-        function updateCountryCount() {
-            const countryCount = realAnalytics.countries.size;
-            document.getElementById('countries-visited').textContent = countryCount;
-            document.getElementById('countries-count').textContent = countryCount;
-        }
-
-        function startSessionTimer() {
-            setInterval(() => {
-                const sessionDuration = Date.now() - realAnalytics.sessionStart;
-                const minutes = Math.floor(sessionDuration / 60000);
-                const seconds = Math.floor((sessionDuration % 60000) / 1000);
-                
-                const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                document.getElementById('session-time').textContent = timeString;
-            }, 1000);
-        }
-
-        // 模拟其他访问者位置（可选）
-        function addSimulatedVisitors() {
-            const simulatedLocations = [
-                { lat: 40.7128, lng: -74.0060, city: 'New York', country: 'USA' },
-                { lat: 51.5074, lng: -0.1278, city: 'London', country: 'UK' },
-                { lat: 35.6762, lng: 139.6503, city: 'Tokyo', country: 'Japan' },
-                { lat: 48.8566, lng: 2.3522, city: 'Paris', country: 'France' },
-                { lat: -33.8688, lng: 151.2093, city: 'Sydney', country: 'Australia' }
+        function addSampleVisitorLocations() {
+            // 添加一些示例访问位置（模拟其他访问者）
+            const sampleLocations = [
+                { lat: 40.7128, lng: -74.0060, name: '纽约, 美国' },
+                { lat: 51.5074, lng: -0.1278, name: '伦敦, 英国' },
+                { lat: 35.6762, lng: 139.6503, name: '东京, 日本' },
+                { lat: 48.8566, lng: 2.3522, name: '巴黎, 法国' },
+                { lat: -33.8688, lng: 151.2093, name: '悉尼, 澳大利亚' },
+                { lat: 37.7749, lng: -122.4194, name: '旧金山, 美国' },
+                { lat: 55.7558, lng: 37.6176, name: '莫斯科, 俄罗斯' },
+                { lat: 39.9042, lng: 116.4074, name: '北京, 中国' }
             ];
 
-            simulatedLocations.forEach((location, index) => {
+            // 延迟添加示例位置，模拟实时访问
+            sampleLocations.forEach((location, index) => {
                 setTimeout(() => {
-                    const marker = L.circleMarker([location.lat, location.lng], {
-                        radius: 6,
-                        fillColor: '#667eea',
-                        color: '#ffffff',
-                        weight: 2,
-                        opacity: 0.8,
-                        fillOpacity: 0.6
-                    }).addTo(visitorMap);
-
-                    marker.bindPopup(`
-                        <div style="text-align: center; font-family: 'Segoe UI', sans-serif;">
-                            <h4 style="margin: 0; color: #667eea;">👤 Visitor</h4>
-                            <p style="margin: 5px 0; font-size: 12px;">${location.city}, ${location.country}</p>
-                            <p style="margin: 5px 0; font-size: 11px;">Recently viewed</p>
-                        </div>
-                    `);
-
-                    // 添加脉冲效果
-                    marker.on('mouseover', function() {
-                        this.setStyle({ radius: 8, fillOpacity: 0.8 });
-                    });
-                    
-                    marker.on('mouseout', function() {
-                        this.setStyle({ radius: 6, fillOpacity: 0.6 });
-                    });
-                }, index * 2000); // 每2秒添加一个访问者
+                    addVisitorBalloon(location.lat, location.lng, location.name, false);
+                    updateVisitorStats();
+                }, index * 1000); // 每秒添加一个
             });
+        }
+
+        function updateVisitorStats() {
+            // 更新访问统计
+            const totalVisits = visitedLocations.size + 3; // 加上一些基础访问量
+            const countries = Math.min(visitedLocations.size, 8); // 最多显示8个国家
+            const activeUsers = Math.min(visitedLocations.size, 3); // 当前活跃用户
+            
+            // 更新统计数字
+            document.getElementById('total-visits').textContent = totalVisits;
+            document.getElementById('countries-count').textContent = countries;
+            document.getElementById('active-users').textContent = activeUsers;
+            document.getElementById('today-visits').textContent = totalVisits;
         }
 
         // 页面初始化
@@ -1099,40 +960,9 @@ function showCluster(clusterType) {
 
             // 延迟初始化地图以提高性能
             setTimeout(() => {
-                initializeRealVisitorMap();
-                // 可选：添加模拟访问者
-                setTimeout(addSimulatedVisitors, 5000);
+                initializeWorldMap();
             }, 1000);
-
-            // 初始化统计
-            updateRealAnalytics();
         });
-
-        // 页面可见性变化时的处理
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
-                // 页面重新可见时更新统计
-                updateRealAnalytics();
-            }
-        });
-
-        // 鼠标移动时更新活跃状态
-        let lastActivity = Date.now();
-        document.addEventListener('mousemove', () => {
-            lastActivity = Date.now();
-        });
-
-        // 定期检查用户活跃状态
-        setInterval(() => {
-            const timeSinceActivity = Date.now() - lastActivity;
-            const isActive = timeSinceActivity < 30000; // 30秒内有活动认为是活跃
-            
-            // 可以在这里添加活跃状态的视觉指示
-            const indicator = document.querySelector('.real-time-indicator');
-            if (indicator) {
-                indicator.style.background = isActive ? '#4caf50' : '#ff9800';
-            }
-        }, 5000);
     </script>
 </body>
 </html>
