@@ -343,8 +343,8 @@
             margin-top: 3rem;
         }
 
-        /* 简化的世界地图样式 */
-        #world-visitor-map {
+        /* 全球地图样式 */
+        #global-visitor-map {
             height: 500px;
             border-radius: 15px;
             overflow: hidden;
@@ -371,6 +371,44 @@
             font-weight: 700;
             color: #667eea;
             margin-bottom: 0.5rem;
+        }
+
+        /* 地图图例 */
+        .map-legend {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            font-size: 0.85rem;
+        }
+
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .legend-circles {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-circle-item {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .legend-circle {
+            border-radius: 50%;
+            border: 2px solid #dc3545;
+            background: rgba(220, 53, 69, 0.3);
         }
     </style>
 </head>
@@ -571,30 +609,53 @@
                     </div>
                 </div>
 
-                <!-- 简化的全球访问地图 -->
+                <!-- 全球访问地图 -->
                 <div class="plot-container">
-                    <div class="plot-title">🌍 Global Visitor Map</div>
+                    <div class="plot-title">🌍 Global Visitor Distribution</div>
                     
                     <div class="simple-stats">
                         <div class="simple-stat-card">
-                            <div class="simple-stat-number" id="total-visits">4</div>
+                            <div class="simple-stat-number" id="total-visits">156</div>
                             <div>Total Visits</div>
                         </div>
                         <div class="simple-stat-card">
-                            <div class="simple-stat-number" id="countries-count">1</div>
+                            <div class="simple-stat-number" id="countries-count">28</div>
                             <div>Countries</div>
                         </div>
                         <div class="simple-stat-card">
-                            <div class="simple-stat-number" id="active-users">1</div>
+                            <div class="simple-stat-number" id="active-users">12</div>
                             <div>Active Users</div>
                         </div>
                         <div class="simple-stat-card">
-                            <div class="simple-stat-number" id="today-visits">4</div>
+                            <div class="simple-stat-number" id="today-visits">43</div>
                             <div>Today's Visits</div>
                         </div>
                     </div>
 
-                    <div id="world-visitor-map"></div>
+                    <div id="global-visitor-map">
+                        <!-- 地图图例 -->
+                        <div class="map-legend">
+                            <div class="legend-title">访问量分布</div>
+                            <div class="legend-circles">
+                                <div class="legend-circle-item">
+                                    <div class="legend-circle" style="width: 8px; height: 8px;"></div>
+                                    <span>1-10</span>
+                                </div>
+                                <div class="legend-circle-item">
+                                    <div class="legend-circle" style="width: 12px; height: 12px;"></div>
+                                    <span>11-50</span>
+                                </div>
+                                <div class="legend-circle-item">
+                                    <div class="legend-circle" style="width: 16px; height: 16px;"></div>
+                                    <span>51-100</span>
+                                </div>
+                                <div class="legend-circle-item">
+                                    <div class="legend-circle" style="width: 20px; height: 20px;"></div>
+                                    <span>100+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -607,8 +668,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script>
         // 全局变量
-        let worldMap;
-        let visitedLocations = new Set();
+        let globalMap;
+        let visitMarkers = [];
 
         // 细胞数据
         const cellData = {
@@ -618,6 +679,62 @@
             microglia: { color: '#96CEB4', cells: generateCells(150, 280, 350, 50) },
             endothelial: { color: '#FFEAA7', cells: generateCells(100, 480, 200, 40) }
         };
+
+        // 全球访问数据（模拟真实访问分布）
+        const globalVisitors = [
+            // 北美
+            { lat: 40.7128, lng: -74.0060, city: '纽约', country: '美国', visits: 145 },
+            { lat: 37.7749, lng: -122.4194, city: '旧金山', country: '美国', visits: 89 },
+            { lat: 34.0522, lng: -118.2437, city: '洛杉矶', country: '美国', visits: 76 },
+            { lat: 41.8781, lng: -87.6298, city: '芝加哥', country: '美国', visits: 52 },
+            { lat: 25.7617, lng: -80.1918, city: '迈阿密', country: '美国', visits: 23 },
+            { lat: 43.6532, lng: -79.3832, city: '多伦多', country: '加拿大', visits: 38 },
+            { lat: 49.2827, lng: -123.1207, city: '温哥华', country: '加拿大', visits: 29 },
+            
+            // 欧洲
+            { lat: 51.5074, lng: -0.1278, city: '伦敦', country: '英国', visits: 132 },
+            { lat: 48.8566, lng: 2.3522, city: '巴黎', country: '法国', visits: 98 },
+            { lat: 52.5200, lng: 13.4050, city: '柏林', country: '德国', visits: 67 },
+            { lat: 50.1109, lng: 8.6821, city: '法兰克福', country: '德国', visits: 45 },
+            { lat: 41.9028, lng: 12.4964, city: '罗马', country: '意大利', visits: 34 },
+            { lat: 59.3293, lng: 18.0686, city: '斯德哥尔摩', country: '瑞典', visits: 28 },
+            { lat: 52.3676, lng: 4.9041, city: '阿姆斯特丹', country: '荷兰', visits: 41 },
+            { lat: 47.3769, lng: 8.5417, city: '苏黎世', country: '瑞士', visits: 19 },
+            
+            // 亚洲
+            { lat: 39.9042, lng: 116.4074, city: '北京', country: '中国', visits: 187 },
+            { lat: 31.2304, lng: 121.4737, city: '上海', country: '中国', visits: 156 },
+            { lat: 22.3193, lng: 114.1694, city: '香港', country: '中国', visits: 73 },
+            { lat: 35.6762, lng: 139.6503, city: '东京', country: '日本', visits: 124 },
+            { lat: 37.5665, lng: 126.9780, city: '首尔', country: '韩国', visits: 86 },
+            { lat: 1.3521, lng: 103.8198, city: '新加坡', country: '新加坡', visits: 91 },
+            { lat: 19.0760, lng: 72.8777, city: '孟买', country: '印度', visits: 47 },
+            { lat: 28.6139, lng: 77.2090, city: '新德里', country: '印度', visits: 35 },
+            { lat: -6.2088, lng: 106.8456, city: '雅加达', country: '印度尼西亚', visits: 22 },
+            
+            // 大洋洲
+            { lat: -33.8688, lng: 151.2093, city: '悉尼', country: '澳大利亚', visits: 64 },
+            { lat: -37.8136, lng: 144.9631, city: '墨尔本', country: '澳大利亚', visits: 42 },
+            { lat: -36.8485, lng: 174.7633, city: '奥克兰', country: '新西兰', visits: 18 },
+            
+            // 南美
+            { lat: -23.5505, lng: -46.6333, city: '圣保罗', country: '巴西', visits: 39 },
+            { lat: -22.9068, lng: -43.1729, city: '里约热内卢', country: '巴西', visits: 28 },
+            { lat: -34.6037, lng: -58.3816, city: '布宜诺斯艾利斯', country: '阿根廷', visits: 21 },
+            
+            // 非洲
+            { lat: -26.2041, lng: 28.0473, city: '约翰内斯堡', country: '南非', visits: 15 },
+            { lat: 30.0444, lng: 31.2357, city: '开罗', country: '埃及', visits: 12 },
+            
+            // 中东
+            { lat: 25.2048, lng: 55.2708, city: '迪拜', country: '阿联酋', visits: 31 },
+            { lat: 24.7136, lng: 46.6753, city: '利雅得', country: '沙特阿拉伯', visits: 14 },
+            { lat: 32.7767, lng: 35.2345, city: '耶路撒冷', country: '以色列', visits: 8 },
+            
+            // 俄罗斯
+            { lat: 55.7558, lng: 37.6176, city: '莫斯科', country: '俄罗斯', visits: 58 },
+            { lat: 59.9311, lng: 30.3609, city: '圣彼得堡', country: '俄罗斯', visits: 26 }
+        ];
 
         function generateCells(count, centerX, centerY, spread) {
             const cells = [];
@@ -779,170 +896,191 @@
             }
         });
 
-        // 初始化世界地图
-        function initializeWorldMap() {
+        // 初始化全球访问地图
+        function initializeGlobalMap() {
             // 创建地图
-            worldMap = L.map('world-visitor-map').setView([20, 0], 2);
+            globalMap = L.map('global-visitor-map').setView([20, 0], 2);
             
-            // 添加地图瓦片
+            // 添加地图瓦片 - 使用较为简洁的样式
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
                 maxZoom: 6,
                 minZoom: 2
-            }).addTo(worldMap);
+            }).addTo(globalMap);
 
-            // 获取用户位置并添加气球标记
-            getUserLocationAndAddBalloon();
+            // 批量添加访问者标记
+            addGlobalVisitorMarkers();
             
-            // 添加一些示例访问位置
-            addSampleVisitorLocations();
+            // 添加当前用户位置（如果可以获取）
+            addCurrentUserLocation();
         }
 
-function getUserLocationAndAddBalloon() {
+        function addGlobalVisitorMarkers() {
+            globalVisitors.forEach((visitor, index) => {
+                // 根据访问量确定圆圈大小
+                let radius;
+                if (visitor.visits >= 100) {
+                    radius = 20;
+                } else if (visitor.visits >= 50) {
+                    radius = 16;
+                } else if (visitor.visits >= 10) {
+                    radius = 12;
+                } else {
+                    radius = 8;
+                }
+
+                // 创建圆圈标记
+                const circleMarker = L.circleMarker([visitor.lat, visitor.lng], {
+                    radius: radius,
+                    fillColor: '#dc3545',
+                    color: '#dc3545',
+                    weight: 2,
+                    opacity: 0.8,
+                    fillOpacity: 0.4
+                }).addTo(globalMap);
+
+                // 添加弹窗信息
+                circleMarker.bindPopup(`
+                    <div style="text-align: center; font-family: 'Segoe UI', sans-serif; min-width: 120px;">
+                        <h4 style="margin: 0 0 8px 0; color: #dc3545; font-size: 14px;">📍 ${visitor.city}</h4>
+                        <p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">${visitor.country}</p>
+                        <p style="margin: 0; font-size: 13px; font-weight: 600; color: #333;">
+                            ${visitor.visits} 次访问
+                        </p>
+                    </div>
+                `);
+
+                // 添加交互效果
+                circleMarker.on('mouseover', function() {
+                    this.setStyle({
+                        radius: radius * 1.3,
+                        fillOpacity: 0.6,
+                        opacity: 1
+                    });
+                });
+
+                circleMarker.on('mouseout', function() {
+                    this.setStyle({
+                        radius: radius,
+                        fillOpacity: 0.4,
+                        opacity: 0.8
+                    });
+                });
+
+                // 延迟显示标记，创建动态效果
+                setTimeout(() => {
+                    circleMarker.setStyle({ fillOpacity: 0.4 });
+                }, index * 50);
+
+                visitMarkers.push(circleMarker);
+            });
+        }
+
+        function addCurrentUserLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
                         
-                        // 添加当前用户的气球标记（绿色）
-                        addVisitorBalloon(lat, lng, '您的位置', true);
+                        // 添加当前用户的特殊标记（绿色）
+                        const userMarker = L.circleMarker([lat, lng], {
+                            radius: 15,
+                            fillColor: '#28a745',
+                            color: '#28a745',
+                            weight: 3,
+                            opacity: 1,
+                            fillOpacity: 0.7
+                        }).addTo(globalMap);
+
+                        userMarker.bindPopup(`
+                            <div style="text-align: center; font-family: 'Segoe UI', sans-serif;">
+                                <h4 style="margin: 0 0 8px 0; color: #28a745; font-size: 14px;">🎯 您的位置</h4>
+                                <p style="margin: 0; font-size: 12px; color: #666;">当前访问者</p>
+                            </div>
+                        `).openPopup();
+
+                        // 添加脉搏动画
+                        userMarker.on('add', function() {
+                            this.setStyle({
+                                radius: 15
+                            });
+                            
+                            // 创建脉搏效果
+                            let growing = true;
+                            setInterval(() => {
+                                if (growing) {
+                                    this.setStyle({ radius: 18 });
+                                    growing = false;
+                                } else {
+                                    this.setStyle({ radius: 15 });
+                                    growing = true;
+                                }
+                            }, 1500);
+                        });
+
+                        // 将地图中心调整到用户位置附近
+                        globalMap.setView([lat, lng], 3);
                         
-                        // 将地图中心设置为用户位置
-                        worldMap.setView([lat, lng], 4);
-                        
-                        // 更新统计
-                        updateVisitorStats();
+                        // 更新统计数据
+                        updateGlobalStats();
                     },
                     (error) => {
-                        console.log('无法获取位置:', error);
+                        console.log('无法获取地理位置:', error);
                         // 使用IP定位作为备选
-                        getLocationFromIP();
-                    },
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 300000
+                        addLocationFromIP();
                     }
                 );
             } else {
-                // 浏览器不支持地理定位，使用IP定位
-                getLocationFromIP();
+                addLocationFromIP();
             }
         }
 
-        function getLocationFromIP() {
-            // 使用免费的IP地理定位服务
+        function addLocationFromIP() {
+            // 使用免费的IP地理定位API
             fetch('https://ipapi.co/json/')
                 .then(response => response.json())
                 .then(data => {
-                    const lat = data.latitude;
-                    const lng = data.longitude;
-                    const city = data.city || 'Unknown City';
-                    const country = data.country_name || 'Unknown Country';
-                    
-                    if (lat && lng) {
-                        // 添加基于IP的位置标记
-                        addVisitorBalloon(lat, lng, `${city}, ${country} (IP定位)`, true);
-                        worldMap.setView([lat, lng], 4);
-                        updateVisitorStats();
+                    if (data.latitude && data.longitude) {
+                        const userMarker = L.circleMarker([data.latitude, data.longitude], {
+                            radius: 15,
+                            fillColor: '#28a745',
+                            color: '#28a745',
+                            weight: 3,
+                            opacity: 1,
+                            fillOpacity: 0.7
+                        }).addTo(globalMap);
+
+                        userMarker.bindPopup(`
+                            <div style="text-align: center; font-family: 'Segoe UI', sans-serif;">
+                                <h4 style="margin: 0 0 8px 0; color: #28a745; font-size: 14px;">🎯 您的位置</h4>
+                                <p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">${data.city}, ${data.country_name}</p>
+                                <p style="margin: 0; font-size: 11px; color: #999;">(基于IP定位)</p>
+                            </div>
+                        `);
+
+                        globalMap.setView([data.latitude, data.longitude], 3);
+                        updateGlobalStats();
                     }
                 })
                 .catch(error => {
                     console.log('IP定位失败:', error);
-                    // 默认显示世界地图
-                    addSampleVisitorLocations();
+                    updateGlobalStats();
                 });
         }
 
-        function addVisitorBalloon(lat, lng, locationName, isCurrentUser = false) {
-            // 创建气球标记
-            const balloonIcon = L.divIcon({
-                className: 'visitor-balloon',
-                html: `<div style="
-                    width: 20px; 
-                    height: 30px; 
-                    background: ${isCurrentUser ? '#4CAF50' : '#FF4757'}; 
-                    border-radius: 50% 50% 50% 0; 
-                    border: 2px solid white; 
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-                    position: relative;
-                    transform: rotate(-45deg);
-                    animation: balloon-bounce 2s infinite ease-in-out;
-                "></div>
-                <style>
-                    @keyframes balloon-bounce {
-                        0%, 100% { transform: rotate(-45deg) translateY(0px); }
-                        50% { transform: rotate(-45deg) translateY(-5px); }
-                    }
-                </style>`,
-                iconSize: [20, 30],
-                iconAnchor: [10, 30]
-            });
+        function updateGlobalStats() {
+            // 计算总访问量
+            const totalVisits = globalVisitors.reduce((sum, visitor) => sum + visitor.visits, 0) + 1;
+            const countriesCount = new Set(globalVisitors.map(v => v.country)).size + 1;
+            const activeUsers = Math.min(globalVisitors.length, 15);
+            const todayVisits = Math.floor(totalVisits * 0.3);
 
-            // 添加标记到地图
-            const marker = L.marker([lat, lng], { icon: balloonIcon }).addTo(worldMap);
-            
-            // 设置弹窗信息
-            marker.bindPopup(`
-                <div style="text-align: center; font-family: 'Segoe UI', sans-serif;">
-                    <h4 style="margin: 0; color: ${isCurrentUser ? '#4CAF50' : '#FF4757'};">
-                        ${isCurrentUser ? '🎯' : '👤'} ${locationName}
-                    </h4>
-                    <p style="margin: 5px 0; font-size: 12px;">
-                        ${isCurrentUser ? '当前访问者' : '访问者'}
-                    </p>
-                    <p style="margin: 5px 0; font-size: 11px; color: #666;">
-                        坐标: ${lat.toFixed(2)}, ${lng.toFixed(2)}
-                    </p>
-                </div>
-            `);
-
-            // 添加交互效果
-            marker.on('mouseover', function() {
-                this.openPopup();
-            });
-
-            // 记录访问位置
-            const locationKey = `${lat.toFixed(1)},${lng.toFixed(1)}`;
-            visitedLocations.add(locationKey);
-            
-            return marker;
-        }
-
-        function addSampleVisitorLocations() {
-            // 添加一些示例访问位置（模拟其他访问者）
-            const sampleLocations = [
-                { lat: 40.7128, lng: -74.0060, name: '纽约, 美国' },
-                { lat: 51.5074, lng: -0.1278, name: '伦敦, 英国' },
-                { lat: 35.6762, lng: 139.6503, name: '东京, 日本' },
-                { lat: 48.8566, lng: 2.3522, name: '巴黎, 法国' },
-                { lat: -33.8688, lng: 151.2093, name: '悉尼, 澳大利亚' },
-                { lat: 37.7749, lng: -122.4194, name: '旧金山, 美国' },
-                { lat: 55.7558, lng: 37.6176, name: '莫斯科, 俄罗斯' },
-                { lat: 39.9042, lng: 116.4074, name: '北京, 中国' }
-            ];
-
-            // 延迟添加示例位置，模拟实时访问
-            sampleLocations.forEach((location, index) => {
-                setTimeout(() => {
-                    addVisitorBalloon(location.lat, location.lng, location.name, false);
-                    updateVisitorStats();
-                }, index * 1000); // 每秒添加一个
-            });
-        }
-
-        function updateVisitorStats() {
-            // 更新访问统计
-            const totalVisits = visitedLocations.size + 3; // 加上一些基础访问量
-            const countries = Math.min(visitedLocations.size, 8); // 最多显示8个国家
-            const activeUsers = Math.min(visitedLocations.size, 3); // 当前活跃用户
-            
-            // 更新统计数字
+            // 更新页面上的统计数字
             document.getElementById('total-visits').textContent = totalVisits;
-            document.getElementById('countries-count').textContent = countries;
+            document.getElementById('countries-count').textContent = countriesCount;
             document.getElementById('active-users').textContent = activeUsers;
-            document.getElementById('today-visits').textContent = totalVisits;
+            document.getElementById('today-visits').textContent = todayVisits;
         }
 
         // 页面初始化
@@ -960,8 +1098,17 @@ function getUserLocationAndAddBalloon() {
 
             // 延迟初始化地图以提高性能
             setTimeout(() => {
-                initializeWorldMap();
+                initializeGlobalMap();
             }, 1000);
+        });
+
+        // 窗口大小改变时重新调整地图
+        window.addEventListener('resize', () => {
+            if (globalMap) {
+                setTimeout(() => {
+                    globalMap.invalidateSize();
+                }, 100);
+            }
         });
     </script>
 </body>
